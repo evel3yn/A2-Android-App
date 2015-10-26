@@ -1,22 +1,22 @@
 package edu.vandy.presenter;
 
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
 import edu.vandy.MVP;
-import edu.vandy.common.Utils;
 import edu.vandy.common.GenericPresenter;
+import edu.vandy.common.Utils;
 import edu.vandy.model.PalantiriModel;
 import edu.vandy.utils.Options;
 import edu.vandy.view.DotArrayAdapter.DotColor;
@@ -54,7 +54,7 @@ public class PalantiriPresenter
     /**
      * Used for Android debugging.
      */
-    private final static String TAG = 
+    private final static String TAG =
         PalantiriPresenter.class.getName();
 
     /**
@@ -91,7 +91,7 @@ public class PalantiriPresenter
      */
     private List<DotColor> mPalantiriColors =
         new ArrayList<>();
-	
+
     /**
      * This List keeps track of how many beings we have and whether
      * they're gazing or not.
@@ -122,9 +122,9 @@ public class PalantiriPresenter
             public Thread newThread(Runnable runnable) {
                 // Create a new BeingThread whose name uniquely
                 // identifies each Being.
-                // TODO -- you fill in here by replacing "return null"
+                // done TODO -- you fill in here by replacing "return null"
                 // with the appropriate code.
-                return null;
+                return new BeingThread(runnable, mBeingCount.getAndIncrement(), PalantiriPresenter.this);
             }
         };
 
@@ -140,7 +140,7 @@ public class PalantiriPresenter
      * created.  One time initialization code goes here, e.g., storing
      * a WeakReference to the View layer and initializing the Model
      * layer.
-     * 
+     *
      * @param view
      *            A reference to the View layer.
      */
@@ -154,17 +154,17 @@ public class PalantiriPresenter
         // passing in the PalantiriModel class to instantiate/manage
         // and "this" to provide this MVP.RequiredModelOps instance.
         super.onCreate(PalantiriModel.class,
-                       this);
+            this);
 
         // Get the intent used to start the Activity.
         final Intent intent = view.getIntent();
 
         // Initialize the Options singleton using the extras contained
         // in the intent.
-        if (Options.instance().parseArgs(view.getActivityContext(), 
-                                         makeArgv(intent)) == false)
+        if (Options.instance().parseArgs(view.getActivityContext(),
+            makeArgv(intent)) == false)
             Utils.showToast(view.getActivityContext(),
-                            "Arguments were incorrect");
+                "Arguments were incorrect");
 
         // A runtime configuration change has not yet occurred.
         mConfigurationChangeOccurred = false;
@@ -175,13 +175,13 @@ public class PalantiriPresenter
      * initialize the PalantiriPresenter object after it's been
      * created.
      *
-     * @param view         
+     * @param view
      *          The currently active MVP.RequiredViewOps.
      */
     @Override
     public void onConfigurationChange(MVP.RequiredViewOps view) {
         Log.d(TAG,
-              "onConfigurationChange() called");
+            "onConfigurationChange() called");
 
         // Reset the WeakReference.
         mView =
@@ -361,6 +361,19 @@ public class PalantiriPresenter
         // ThreadFactory instance.  Finally, iterate through all the
         // BeingTasks and execute them on the threadPoolExecutor.
         // TODO - You fill in here.
+
+        mBeingsTasks = new ArrayList<>(beingCount);
+        CountDownLatch countDownLatch = new CountDownLatch(beingCount);
+
+        for (int i = 0; i < beingCount; i++) {
+            BeingAsyncTask beingAsyncTask =
+                new BeingAsyncTask(i, countDownLatch);
+            mBeingsTasks.add(beingAsyncTask);
+        }
+
+        Executor executor = Executors.newFixedThreadPool(beingCount);
+
+
     }
 
     /**
