@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -360,7 +362,7 @@ public class PalantiriPresenter
         // of Beings, (2) a LinkedBlockingQueue, and (3) the
         // ThreadFactory instance.  Finally, iterate through all the
         // BeingTasks and execute them on the threadPoolExecutor.
-        // TODO - You fill in here.
+        // (done) TODO - You fill in here.
 
         mBeingsTasks = new ArrayList<>(beingCount);
         CountDownLatch countDownLatch = new CountDownLatch(beingCount);
@@ -371,7 +373,20 @@ public class PalantiriPresenter
             mBeingsTasks.add(beingAsyncTask);
         }
 
-        Executor executor = Executors.newFixedThreadPool(beingCount);
+        Executor executor =
+            new ThreadPoolExecutor(
+                beingCount
+                , beingCount
+                , 1000
+                , TimeUnit.MILLISECONDS
+                , new LinkedBlockingQueue(mBeingsTasks)
+                , mThreadFactory
+            );
+
+        for (Runnable r: mBeingsTasks) {
+            executor.execute(r);
+        }
+
 
 
     }

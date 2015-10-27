@@ -151,7 +151,7 @@ public class BeingAsyncTask
      */
     @Override
     public void onProgressUpdate(Runnable ...runnableCommands) {
-        // TODO -- you fill in here with the appropriate call to
+        // (done) TODO -- you fill in here with the appropriate call to
         // the runnableCommands that will cause the progress
         // update to be displayed in the UI thread.
         if (runnableCommands != null && runnableCommands.length > 0) {
