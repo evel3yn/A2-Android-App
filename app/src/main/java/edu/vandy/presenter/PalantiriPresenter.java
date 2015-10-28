@@ -196,7 +196,7 @@ public class PalantiriPresenter
     /**
      * Hook method called to shutdown the Model layer.
      *
-     * @param isChangeConfigurations
+     * @param isChangingConfigurations
      *        True if a runtime configuration triggered the onDestroy() call.
      */
     @Override
@@ -221,7 +221,7 @@ public class PalantiriPresenter
     private String[] makeArgv(Intent intent) {
         // Create the list of arguments to pass to the Options
         // singleton.
-        String argv[] = {
+        String[] argv = {
             "-b", // Number of Being threads.
             intent.getStringExtra("BEINGS"),
             "-p", // Number of Palantiri.
